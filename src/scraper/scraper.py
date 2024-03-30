@@ -24,7 +24,11 @@ class Scraper:
                     or href.endswith(".pcap")
                     or href.endswith(".pcapng")
                 ):
-                    capture_downloads.append("https://wiki.wireshark.org" + href)
+                    capture_downloads.append(
+                        f"https://wiki.wireshark.org{href}"
+                        if href.startswith("/")
+                        else f"https://wiki.wireshark.org/{href}"
+                    )
             except Exception as e:
                 print(e)
 

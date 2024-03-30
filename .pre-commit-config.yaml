@@ -7,7 +7,6 @@ repos:
         - id: check-yaml
         - id: check-added-large-files
         - id: check-ast
-        - id: double-quote-string-fixer
         - id: check-toml
         - id: check-json
         - id: check-xml
@@ -24,3 +23,4 @@ repos:
       rev: 7.0.0
       hooks:
         - id: flake8
+          args: ["--ignore=E266,W503,E203,E501,W605"]

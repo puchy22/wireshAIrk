@@ -1,20 +1,15 @@
 # wireshAIrk
 
-[![PyPI - Version](https://img.shields.io/pypi/v/wireshairk.svg)](https://pypi.org/project/wireshairk)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/wireshairk.svg)](https://pypi.org/project/wireshairk)
-
 -----
 
 **Table of Contents**
 
-- [Installation](#installation)
+- [Description](#description)
 - [License](#license)
 
-## Installation
+## Description
 
-```console
-pip install wireshairk
-```
+This project aims to help network administrator to use LLMs to analyze network traces.
 
 ## License
 

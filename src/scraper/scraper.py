@@ -35,12 +35,15 @@ class Scraper:
         return capture_downloads
 
     def download_captures(self):
-        if not os.path.exists(os.path.join(os.getcwd(), "data")):
-            os.makedirs(os.path.join(os.getcwd(), "data"))
+        if not os.path.exists(os.path.join(os.getcwd(), "data/raw/")):
+            os.makedirs(os.path.join(os.getcwd(), "data/raw/"))
 
         for download in self.download_urls:
-            response = requests.get(download)
-            filename = download.split("/")[-1]
-            print("Downloading " + filename)
-            with open(os.path.join(os.getcwd(), "data/raw/", filename), "wb") as f:
-                f.write(response.content)
+            try:
+                response = requests.get(download)
+                filename = download.split("/")[-1]
+                print("Downloading " + filename)
+                with open(os.path.join(os.getcwd(), "data/raw/", filename), "wb") as f:
+                    f.write(response.content)
+            except Exception as e:
+                print(f"Error downloading {download}. ERROR: {e}")

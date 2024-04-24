@@ -17,13 +17,8 @@ def clean_raw_data(data_path: str = DATASET_PATH) -> None:
         if file.endswith(".cap") or file.endswith(".pcap") or file.endswith(".pcapng"):
             try:
                 cap = pyshark.FileCapture(os.path.join(data_path, file))
-                cap_len = 0
-                ip_capture = False
-                for packet in cap:
-                    if not ip_capture and "ip" in packet or "ipv6" in packet:
-                        ip_capture = True
-                    cap_len += 1
-
+                cap.load_packets()
+                cap_len = len(cap)
                 cap.close()
 
                 # Check the number of packets and if is a network capture
@@ -33,12 +28,8 @@ def clean_raw_data(data_path: str = DATASET_PATH) -> None:
                 if cap_len > 1000:
                     print(f"File {file} has more than 1000 packets. Skipping...")
                     continue
-                if not ip_capture:
-                    print(f"File {file} does not have IP layer. Skipping...")
-                    continue
 
                 # Copy file to new folder
-
                 shutil.copyfile(
                     os.path.join(data_path, file),
                     os.path.join(os.getcwd(), "data/cleaned", file),

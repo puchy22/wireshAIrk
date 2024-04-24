@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Generation of dataset",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/wireshairk/__main__.py",
+            "args": [
+                "generate-dataset",
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+        },
+        {
+            "name": "Cleaning raw data",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/wireshairk/__main__.py",
+            "args": [
+                "clean-raw"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+        }
+    ]
+}

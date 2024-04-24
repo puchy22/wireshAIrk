@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from subprocess import check_output
 
 import pyshark
@@ -35,6 +36,8 @@ class Dataset:
         protocols_count = {}
         start_timestamp = 0
 
+        can_answer_ip_question = False
+
         for packet in cap:
             try:
                 # Get Basic info
@@ -51,10 +54,12 @@ class Dataset:
                         protocols_count[layer.layer_name] += 1
 
                 # IP layer
-                if "ip" in packet:
+                if "ip" in packet and packet.ip.src and packet.ip.dst:
+                    can_answer_ip_question = True
                     ip_src = packet.ip.src
                     ip_dst = packet.ip.dst
-                elif "ipv6" in packet:
+                elif "ipv6" in packet and packet.ipv6.src and packet.ipv6.dst:
+                    can_answer_ip_question = True
                     ip_src = packet.ipv6.src
                     ip_dst = packet.ipv6.dst
                 else:
@@ -87,14 +92,19 @@ class Dataset:
                 quest_sol[question] = (
                     f"In the capture there are a total of {str(num_packets)} packets"
                 )
-            elif i == 1:
+            elif i == 1 and can_answer_ip_question:
                 quest_sol[question] = (
                     f"There are a total of {str(len(ip_count))} unique communicators in the trace. These are the IPs: {', '.join(ip_count.keys())}"
                 )
-            elif i == 2 and ip_count:
-                quest_sol[question] = (
-                    f"The IP that participates the most in the communication is the IP {max(ip_count, key=ip_count.get)} this appears in a total of {ip_count[max(ip_count, key=ip_count.get)]} communications."
-                )
+            elif i == 2:
+                if can_answer_ip_question:
+                    quest_sol[question] = (
+                        f"The IP that participates the most in the communication is the IP {max(ip_count, key=ip_count.get)} this appears in a total of {ip_count[max(ip_count, key=ip_count.get)]} communications."
+                    )
+                else:
+                    quest_sol[question] = (
+                        "The used protocol in the capture does not have IP addresses. Cannot answer the question."
+                    )
             elif i == 3:
                 quest_sol[question] = (
                     f"The total size of transmitted bytes is {str(num_bytes)}."
@@ -109,7 +119,11 @@ class Dataset:
                 tcp = protocols_count.get("tcp", 0)
                 udp = protocols_count.get("udp", 0)
 
-                if icmp > icmpv6 and icmp > tcp and icmp > udp:
+                if icmp == icmpv6 == tcp == udp == 0:
+                    quest_sol[question] = (
+                        "In the capture is not used any of those protocols."
+                    )
+                elif icmp > icmpv6 and icmp > tcp and icmp > udp:
                     quest_sol[question] = "In the capture predominates the use of ICMP."
                 elif icmpv6 > icmp and icmpv6 > tcp and icmpv6 > udp:
                     quest_sol[question] = (
@@ -154,7 +168,7 @@ class Dataset:
                     i = 0
 
                     for question, answer in question_and_answers.items():
-                        prompt = f"{context[i]}\nNo.|Time|Source|Destination|Protocol|Length|Port src.|Port dst.|Info {self.__cap_to_str(os.path.join(self.__data_path, file_cap))}\nQ: {question}"
+                        prompt = f"{context[i]}\nNo.|Time|Source|Destination|Protocol|Length|Info\n {self.__cap_to_str(os.path.join(self.__data_path, file_cap))}\nQ: {question}"
 
                         data = {
                             "context": "You are a network analyst and you have to help answering questions about a network trace.",
@@ -183,19 +197,47 @@ class Dataset:
 
     def __cap_to_str(self, file: str) -> str:
         try:
-            out = check_output(["tshark", "-r", file])
+            out = check_output(
+                [
+                    "tshark",
+                    "-r",
+                    file,
+                    "-T",
+                    "tabs",
+                ]
+            )
             return self.__clean_cap_format(out.decode("utf-8"))
         except Exception as e:
             raise Exception(f"Fail reading the file. ERROR: {e}")
 
     def __clean_cap_format(self, cap: str) -> str:
-        return (
-            cap.replace("\n", "\n")
-            .replace("\t", " ")
-            .replace("  ", " ")
-            .replace('"', "'")
-            .replace("\u2192", "->")
-        )
+        # Split the string by lines
+        cap_lines = cap.strip().split("\n")
+
+        match_tabs = r"(?<!\\)\t"
+
+        table_rows = []
+
+        for line in cap_lines:
+            columns = re.split(match_tabs, line.strip())
+
+            if "\u2192" in columns:
+                # Remove it from list
+                columns.remove("\u2192")
+
+            # Format columns elements before append them to the table
+            for i, col in enumerate(columns):
+                col = col.strip().replace("\u2192", "->").replace('"', "'")
+                columns[i] = col
+
+            table_rows.append(columns)
+
+        cap_formated = ""
+
+        for row in table_rows:
+            cap_formated += " | ".join(row) + "\n"
+
+        return cap_formated
 
     def get_questions(self):
         return self.__questions

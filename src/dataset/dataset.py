@@ -92,10 +92,15 @@ class Dataset:
                 quest_sol[question] = (
                     f"In the capture there are a total of {str(num_packets)} packets"
                 )
-            elif i == 1 and can_answer_ip_question:
-                quest_sol[question] = (
-                    f"There are a total of {str(len(ip_count))} unique communicators in the trace. These are the IPs: {', '.join(ip_count.keys())}"
-                )
+            elif i == 1:
+                if can_answer_ip_question:
+                    quest_sol[question] = (
+                        f"There are a total of {str(len(ip_count))} unique communicators in the trace. These are the IPs: {', '.join(ip_count.keys())}"
+                    )
+                else:
+                    quest_sol[question] = (
+                        "The used protocol in the capture does not have IP addresses. Cannot answer the question."
+                    )
             elif i == 2:
                 if can_answer_ip_question:
                     quest_sol[question] = (

@@ -4,6 +4,7 @@ import click
 
 from dataset.dataset import Dataset
 from lib.clean_raw_data import clean_raw_data
+from llm_eval.llm_eval import LLM_Evaluator
 from scraper.scraper import Scraper
 
 
@@ -108,6 +109,47 @@ def generate_dataset(data_path, zero_shot, one_shot, chain_of_thought):
             "zero_shot",
             10 * [""],
         )
+
+
+@wireshairk.command()
+@click.option("--model", default="llama2", help="Model to evaluate")
+@click.option(
+    "--dataset_path", default="data/zero_shot/dataset.jsonl", help="Path to the dataset"
+)
+@click.option(
+    "--output_path",
+    default="data/evaluation/generated_output_llama2.jsonl",
+    help="Path to the generated output file",
+)
+def answer_questions(model, dataset_path, output_path):
+    click.echo(f"Answering questions for model: {model}")
+    evaluator = LLM_Evaluator(model_to_eval=model, dataset_path=dataset_path)
+    evaluator.answer_questions(output_path=output_path)
+
+
+@wireshairk.command()
+@click.option(
+    "--generated_output",
+    default="data/evaluation/generated_output_llama2.jsonl",
+    help="Path to the generated output file",
+)
+def evaluate(generated_output):
+    click.echo("Generating report")
+    # Extract the name of evaluated model from the generated_output path
+    model = generated_output.split("/")[-1].split("_")[-1].split(".")[0]
+    evaluator = LLM_Evaluator(model_to_eval=model)
+    evaluator.evaluate_model(generated_output_path=generated_output)
+
+
+@wireshairk.command()
+@click.option(
+    "--evaluation_input", default="data/evaluation/generated_output_llama2.jsonl"
+)
+def generate_report(evaluation_input):
+    model = evaluation_input.split("/")[-1].split("_")[-1].split(".")[0]
+    click.echo(f"Generating report for model: {model}")
+    evaluator = LLM_Evaluator(model_to_eval=model)
+    evaluator.generate_report(evaluation_input)
 
 
 if __name__ == "__main__":

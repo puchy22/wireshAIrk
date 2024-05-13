@@ -22,11 +22,11 @@ def clean_raw_data(data_path: str = DATASET_PATH) -> None:
                 cap.close()
 
                 # Check the number of packets and if is a network capture
-                if cap_len < 5:
-                    print(f"File {file} has less than 5 packets. Skipping...")
+                if cap_len < 1:
+                    print(f"File {file} has less than 1 packets. Skipping...")
                     continue
-                if cap_len > 1000:
-                    print(f"File {file} has more than 1000 packets. Skipping...")
+                if cap_len > 125:
+                    print(f"File {file} has more than 125 packets. Skipping...")
                     continue
 
                 # Copy file to new folder

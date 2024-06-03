@@ -2,6 +2,8 @@ import json
 import os
 import re
 
+import plotly.express as px
+import plotly.graph_objects as go
 import requests
 
 
@@ -166,20 +168,48 @@ class LLM_Evaluator:
 
         total_correct = 0
         total_problematic_eval = 0
-        total_total = 0
-        total_total_punct = 0
+        total_questions = 0
+        total_punct = 0
 
         for data in data_per_question.values():
             total_correct += data["correct"]
             total_problematic_eval += data["problematic_eval"]
-            total_total += data["total"]
-            total_total_punct += data["total_punct"]
+            total_questions += data["total"]
+            total_punct += data["total_punct"]
 
         print(f"Total correct answers: {total_correct}")
         print(f"Total problematic evaluations: {total_problematic_eval}")
-        print(f"Total questions: {total_total}")
+        print(f"Total questions: {total_questions}")
         print(
-            f"Average punctuation: {total_total_punct / total_total if total_total != 0 else 0}"
+            f"Average punctuation: {total_punct / total_questions if total_questions != 0 else 0}"
+        )
+
+        # Generate some charts
+
+        model_name = evaluation_input.split("/")[-1].split(".")[0].split("_")[-1]
+
+        type_of_dataset = "_".join(
+            evaluation_input.split("/")[-1].split(".")[0].split("_")[1:-1]
+        )
+
+        os.makedirs(
+            f"data/evaluation/charts/{model_name}/{type_of_dataset}", exist_ok=True
+        )
+
+        # Generate pie chart with all correct, incorrect and problematic answers indepent of the question
+
+        fig = px.pie(
+            values=[
+                total_correct,
+                total_questions - total_correct - total_problematic_eval,
+                total_problematic_eval,
+            ],
+            names=["Correct", "Incorrect", "Problematic evaluations"],
+            title=f"Correct and incorrect answers: {type_of_dataset.replace("_", " ")} {model_name}",
+        )
+
+        fig.write_image(
+            f"data/evaluation/charts/{model_name}/{type_of_dataset}/correct_incorrect_pie_chart.png"
         )
 
         print("----------------")
@@ -201,6 +231,59 @@ class LLM_Evaluator:
                 print(
                     f"{error.__class__.__name__}[{error.__traceback__.tb_lineno}]: {error}"
                 )
+
+        # Generate bar chart with the correct and incorrect answers by question
+
+        fig = go.Figure(
+            data=[
+                go.Bar(
+                    name="Correct",
+                    x=[f"Question {i}" for i in range(9)],
+                    y=[data_per_question[f"question{i}"]["correct"] for i in range(9)],
+                ),
+                go.Bar(
+                    name="Incorrect",
+                    x=[f"Question {i + 1}" for i in range(9)],
+                    y=[
+                        data_per_question[f"question{i}"]["total"]
+                        - data_per_question[f"question{i}"]["correct"]
+                        for i in range(9)
+                    ],
+                ),
+            ]
+        )
+
+        fig.update_layout(
+            barmode="group",
+            title=f"Correct and incorrect answers by question: {type_of_dataset.replace('_', ' ')} {model_name}",
+        )
+
+        fig.write_image(
+            f"data/evaluation/charts/{model_name}/{type_of_dataset}/correct_incorrect_bar_chart.png"
+        )
+
+        # Generate radar chart with the total punctuation by question, take in account that the maximum punctuation that has to be the maximum value of the radar chart is 29700
+
+        fig = go.Figure()
+
+        fig.add_trace(
+            go.Scatterpolar(
+                r=[data_per_question[f"question{i}"]["total_punct"] for i in range(9)],
+                theta=[f"Question {i}" for i in range(9)],
+                fill="toself",
+                name="Total punctuation",
+            )
+        )
+
+        fig.update_layout(
+            polar=dict(radialaxis=dict(visible=True, range=[0, 29700])),
+            showlegend=False,
+            title=f"Total punctuation by question: {type_of_dataset.replace('_', ' ')} {model_name}",
+        )
+
+        fig.write_image(
+            f"data/evaluation/charts/{model_name}/{type_of_dataset}/total_punctuation_radar_chart.png"
+        )
 
     def __load_dataset(self, dataset_path: str):
         dataset = []

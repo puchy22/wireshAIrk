@@ -24,7 +24,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = ["requests", "bs4", "pyshark", "click", "pre-commit"]
+dependencies = ["requests", "bs4", "pyshark", "click", "pre-commit", "plotly", "pandas", "kaleido"]
 
 [project.urls]
 Documentation = "https://github.com/puchy22/wireshairk#readme"

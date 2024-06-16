@@ -238,16 +238,15 @@ class LLM_Evaluator:
             data=[
                 go.Bar(
                     name="Correct",
-                    x=[f"Question {i}" for i in range(9)],
-                    y=[data_per_question[f"question{i}"]["correct"] for i in range(9)],
+                    x=[f"Question {i + 1}" for i in range(9)],
+                    y=[data["correct"] for data in data_per_question.values()],
                 ),
                 go.Bar(
                     name="Incorrect",
                     x=[f"Question {i + 1}" for i in range(9)],
                     y=[
-                        data_per_question[f"question{i}"]["total"]
-                        - data_per_question[f"question{i}"]["correct"]
-                        for i in range(9)
+                        data["total"] - data["correct"]
+                        for data in data_per_question.values()
                     ],
                 ),
             ]
@@ -268,8 +267,8 @@ class LLM_Evaluator:
 
         fig.add_trace(
             go.Scatterpolar(
-                r=[data_per_question[f"question{i}"]["total_punct"] for i in range(9)],
-                theta=[f"Question {i}" for i in range(9)],
+                r=[data["total_punct"] for data in data_per_question.values()],
+                theta=[f"Question {i + 1}" for i in range(9)],
                 fill="toself",
                 name="Total punctuation",
             )

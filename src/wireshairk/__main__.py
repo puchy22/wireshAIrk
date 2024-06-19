@@ -57,7 +57,7 @@ def scrape_and_clean():
 def generate_dataset(data_path, zero_shot, one_shot, chain_of_thought):
     click.echo("Generating dataset")
     dataset = Dataset(os.path.join(os.getcwd(), data_path))
-    capture_example = "No.|Time|Source|Destination|Protocol|Length|Port src.|Port dst.|Info\n 1 | 0.000000 | 145.254.160.237 | 65.208.228.223 | TCP | 62 | 3372 -> 80 [SYN] Seq=0 Win=8760 Len=0 MSS=1460 SACK_PERM\n2 | 0.911310 | 65.208.228.223 | 145.254.160.237 | TCP | 62 | 80 -> 3372 [SYN, ACK] Seq=0 Ack=1 Win=5840 Len=0 MSS=1380 SACK_PERM\n3 | 0.911310 | 145.254.160.237 | 65.208.228.223 | TCP | 54 | 3372 -> 80 [ACK] Seq=1 Ack=1 Win=9660 Len=0\n4 | 0.911310 | 145.254.160.237 | 65.208.228.223 | HTTP | 533 | GET /download.html HTTP/1.1\n5 | 1.472116 | 145.254.160.237 | 145.253.2.203 | DNS 89 Standard query 0x0023 A pagead2.googlesyndication.com"
+    capture_example = "No.|Time|Source|Destination|Protocol|Length|Port src.|Port dst.|Info\n 1 | 0.000000 | 145.254.160.237 | 65.208.228.223 | TCP | 62 | 3372 -> 80 [SYN] Seq=0 Win=8760 Len=0 MSS=1460 SACK_PERM\n2 | 0.911310 | 65.208.228.223 | 145.254.160.237 | TCP | 62 | 80 -> 3372 [SYN, ACK] Seq=0 Ack=1 Win=5840 Len=0 MSS=1380 SACK_PERM\n3 | 0.911310 | 145.254.160.237 | 65.208.228.223 | TCP | 54 | 3372 -> 80 [ACK] Seq=1 Ack=1 Win=9660 Len=0\n4 | 0.911310 | 145.254.160.237 | 65.208.228.223 | HTTP | 533 | GET /download.html HTTP/1.1\n5 | 1.472116 | 145.254.160.237 | 145.253.2.203 | DNS | 89 Standard query 0x0023 A pagead2.googlesyndication.com"
     questions = dataset.get_questions()
 
     if one_shot:

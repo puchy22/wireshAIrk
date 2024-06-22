@@ -267,7 +267,10 @@ class LLM_Evaluator:
 
         fig.add_trace(
             go.Scatterpolar(
-                r=[data["total_punct"] for data in data_per_question.values()],
+                r=[
+                    (data["total_punct"] / data["total"])
+                    for data in data_per_question.values()
+                ],
                 theta=[f"Question {i + 1}" for i in range(9)],
                 fill="toself",
                 name="Total punctuation",
@@ -275,7 +278,7 @@ class LLM_Evaluator:
         )
 
         fig.update_layout(
-            polar=dict(radialaxis=dict(visible=True, range=[0, 29700])),
+            polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
             showlegend=False,
             title=f"Total punctuation by question: {type_of_dataset.replace('_', ' ')} {model_name}",
         )
